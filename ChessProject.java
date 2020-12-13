@@ -122,7 +122,7 @@ public class  ChessProject extends JFrame implements MouseListener, MouseMotionL
 	/*
 		This method checks if there is a piece present on a particular square.
 	*/
-	private Boolean piecePresent(int x, int y){
+	public Boolean piecePresent(int x, int y){
 		Component c = chessBoard.findComponentAt(x, y);
 		if(c instanceof JPanel){
 			return false;
@@ -134,8 +134,8 @@ public class  ChessProject extends JFrame implements MouseListener, MouseMotionL
 
 	public String getPieceName(int x, int y) {
 		String returnedPieceName="";
-		x=(x* 75) + 20;
-		y=(y* 75) + 20;
+		x=(x* 75);
+		y=(y* 75);
 		Component c2 = chessBoard.findComponentAt(x, y);
 		if(c2 instanceof JLabel){
 			JLabel awaitingPiece = (JLabel)c2;
@@ -147,7 +147,7 @@ public class  ChessProject extends JFrame implements MouseListener, MouseMotionL
 		}
 
 	}
-	private Boolean checkSurroundingSquares(Square s){
+	public Boolean checkSurroundingSquares(Square s){
 		Boolean possible = false;
 		int x = s.getXC()*75;
 		int y = s.getYC()*75;
@@ -157,7 +157,7 @@ public class  ChessProject extends JFrame implements MouseListener, MouseMotionL
 		}
 		return possible;
 	}
-	private Boolean checkSurroundingSquaresWhite(Square s){
+	public Boolean checkSurroundingSquaresWhite(Square s){
 		Boolean possible = false;
 		int x = s.getXC()*75;
 		int y = s.getYC()*75;
@@ -220,11 +220,66 @@ public class  ChessProject extends JFrame implements MouseListener, MouseMotionL
 
 		return pieceScore;
 	}
+
+	public int getBlackPieceScore(int x, int y, String name){
+		int	pieceScore = 0;
+		if(piecePresent(x, y)) {
+
+			if(name.contains("WhitePawn") && pieceScore < 2){
+				//oponent = true;
+				pieceScore = 1;
+				System.out.println("White Pawn found with a value of " + pieceScore);
+			}
+			if(name.contains("WhiteKnight")&& pieceScore < 3){
+				//oponent = true;
+				if(piecePresent(x,y)){
+					pieceScore = 3;
+				}
+				System.out.println("White Knight found with a value of " + pieceScore);
+			}
+			if(name.contains("WhiteBishup")&& pieceScore < 3){
+				//oponent = true;
+				if(piecePresent(x,y)){
+					pieceScore = 3;
+				}
+				System.out.println("White Bishop found with a value of " + pieceScore);
+			}
+			if(name.contains("WhiteRook")&& pieceScore < 5){
+				//oponent = true;
+				if(piecePresent(x,y)){
+					pieceScore = 5;
+				}
+				System.out.println("White Rook found with a value of " + pieceScore);
+			}
+			if(name.contains("WhiteQueen")&& pieceScore < 9){
+				//oponent = true;
+				if(piecePresent(x,y)){
+					pieceScore = 9;
+				}
+				System.out.println("White Queen found with a value of " + pieceScore);
+			}
+			if(name.contains("WhiteKing")&& pieceScore < 100){
+				//oponent = true;
+				if(piecePresent(x,y)){
+					pieceScore = 999;
+				}
+				System.out.println("White King found with a value of " + pieceScore);
+			}
+			if(name.isEmpty()){
+				pieceScore = 0;
+				System.out.println("No Piece Found | No Points");
+			}
+
+		}
+
+
+		return pieceScore;
+	}
 	
 	/*
 		This is a method to check if a piece is a Black piece.
 	*/
-	private Boolean checkWhiteOponent(int newX, int newY){
+	public Boolean checkWhiteOponent(int newX, int newY){
 		Boolean oponent;
 		Component c1 = chessBoard.findComponentAt(newX, newY);
 		JLabel awaitingPiece = (JLabel)c1;
@@ -237,7 +292,7 @@ public class  ChessProject extends JFrame implements MouseListener, MouseMotionL
 		}		
 		return oponent;
 	}
-	private Boolean checkBlackOponent(int newX, int newY){
+	public Boolean checkBlackOponent(int newX, int newY){
 		Boolean oponent;
 		Component c1 = chessBoard.findComponentAt(newX, newY);
 		JLabel awaitingPiece = (JLabel)c1;
@@ -250,7 +305,136 @@ public class  ChessProject extends JFrame implements MouseListener, MouseMotionL
 		}
 		return oponent;
 	}
- 
+	public void colorSquares(Stack squares) {
+		Border greenBorder = BorderFactory.createLineBorder(Color.GREEN, 3);
+		while (!squares.empty()) {
+			Square s = (Square) squares.pop();
+			int location = s.getXC() + ((s.getYC()) * 8);
+			JPanel panel = (JPanel) chessBoard.getComponent(location);
+			panel.setBorder(greenBorder);
+		}
+	}
+	public void resetBorders(){
+		Border empty = BorderFactory.createEmptyBorder();
+		for(int i=0;i < 64;i++){
+			JPanel tmppanel = (JPanel)chessBoard.getComponent(i);
+			tmppanel.setBorder(empty);
+		}
+	}
+
+	/*
+      The method printStack takes in a Stack of Moves and prints out all possible moves.
+    */
+	public void printStack(Stack input){
+		Move m;
+		Square s, l;
+		while(!input.empty()){
+			m = (Move)input.pop();
+			s = (Square)m.getStart();
+			l = (Square)m.getLanding();
+			System.out.println("The possible move that was found is : ("+s.getXC()+" , "+s.getYC()+"), landing at ("+l.getXC()+" , "+l.getYC()+")");
+		}
+	}
+	public void getLandingSquares(Stack found){
+		Move tmp;
+		Square landing;
+		Stack squares = new Stack();
+		while(!found.empty()){
+			tmp = (Move)found.pop();
+			landing = (Square)tmp.getLanding();
+			squares.push(landing);
+		}
+		colorSquares(squares);
+	}
+	public Stack findWhitePieces() {
+		Stack squares = new Stack();
+		String icon;
+		int x;
+		int y;
+		String pieceName;
+		for (int i = 0; i < 600; i += 75) {
+			for (int j = 0; j < 600; j += 75) {
+				y = i / 75;
+				x = j / 75;
+				Component tmp = chessBoard.findComponentAt(j, i);
+				if (tmp instanceof JLabel) {
+					chessPiece = (JLabel) tmp;
+					icon = chessPiece.getIcon().toString();
+					pieceName = icon.substring(0, (icon.length() - 4));
+					if (pieceName.contains("White")) {
+						Square stmp = new Square(x, y, pieceName);
+						squares.push(stmp);
+					}
+				}
+			}
+		}
+		return squares;
+	}
+
+	public Stack findBlackPieces() {
+		Stack squares = new Stack();
+		String icon;
+		int x;
+		int y;
+		String pieceName;
+		for (int i = 0; i < 600; i += 75) {
+			for (int j = 0; j < 600; j += 75) {
+				y = i / 75;
+				x = j / 75;
+				Component tmp = chessBoard.findComponentAt(j, i);
+				if (tmp instanceof JLabel) {
+					chessPiece = (JLabel) tmp;
+					icon = chessPiece.getIcon().toString();
+					pieceName = icon.substring(0, (icon.length() - 4));
+					if (pieceName.contains("Black")) {
+						Square stmp = new Square(x, y, pieceName);
+						squares.push(stmp);
+					}
+				}
+			}
+		}
+		return squares;
+	}
+	public  Stack blackAttacks(){
+		Stack black = findBlackPieces();
+		Stack completeMoves = new Stack();
+		Move tmp;
+		Stack temporary = new Stack();
+		while(!black.empty()){
+			Square s = (Square)black.pop();
+			String tmpString = s.getName();
+			Stack tmpMoves = new Stack();
+
+    /*
+        We need to identify all the possible moves that can be made by the AI Opponent
+    */
+			if(tmpString.contains("Knight")){
+				tmpMoves = getBlackKnightMoves(s.getXC(), s.getYC(), s.getName());
+			}
+			else if(tmpString.contains("Bishop")){
+				tmpMoves = getBlackBishopMoves(s.getXC(), s.getYC(), s.getName());
+			}
+			else if(tmpString.contains("Pawn")){
+				tmpMoves = getBlackPawnSquares(s.getXC(), s.getYC(), s.getName());
+			}
+			else if(tmpString.contains("Rook")){
+				tmpMoves = getBlackRookMoves(s.getXC(), s.getYC(), s.getName());
+			}
+			else if(tmpString.contains("Queen")){
+				tmpMoves = getBlackQueenMoves(s.getXC(), s.getYC(), s.getName());
+			}
+			else if(tmpString.contains("King")){
+				tmpMoves = getBlackKingSquares(s.getXC(), s.getYC(), s.getName());
+			}
+
+			while(!tmpMoves.empty()){
+				tmp = (Move)tmpMoves.pop();
+				completeMoves.push(tmp);
+			}
+		}
+		return completeMoves;
+	}
+
 	/*
 		This method is called when we press the Mouse. So we need to find out what piece we have 
 		selected. We may also not have selected a piece!
@@ -883,32 +1067,8 @@ public class  ChessProject extends JFrame implements MouseListener, MouseMotionL
     public void mouseExited(MouseEvent e) {
 	
     }
-	private Stack findWhitePieces() {
-		Stack squares = new Stack();
-		String icon;
-		int x;
-		int y;
-		String pieceName;
-		for (int i = 0; i < 600; i += 75) {
-			for (int j = 0; j < 600; j += 75) {
-				y = i / 75;
-				x = j / 75;
-				Component tmp = chessBoard.findComponentAt(j, i);
-				if (tmp instanceof JLabel) {
-					chessPiece = (JLabel) tmp;
-					icon = chessPiece.getIcon().toString();
-					pieceName = icon.substring(0, (icon.length() - 4));
-					if (pieceName.contains("White")) {
-						Square stmp = new Square(x, y, pieceName);
-						squares.push(stmp);
-					}
-				}
-			}
-		}
-		return squares;
-	}
 
-	private Stack getKnightMoves(int x, int y, String piece) {
+	public Stack getKnightMoves(int x, int y, String piece) {
 		Square startingSquare = new Square(x, y, piece);
 		Stack moves = new Stack();
 		Stack attacking = new Stack();
@@ -931,21 +1091,16 @@ public class  ChessProject extends JFrame implements MouseListener, MouseMotionL
 
 		for (int i = 0; i < 8; i++) {
 			Square tmp = (Square) moves.pop();
-			Move tmpmove = new Move(startingSquare, tmp, getPieceScore(tmp.getYC(), tmp.getYC(), getPieceName(tmp.getYC(), tmp.getYC())));	//Added getPieceScore Here | Used to send weighting of piece.
+			Move tmpmove = new Move(startingSquare, tmp, getPieceScore(tmp.getYC(), tmp.getYC(), getPieceName(tmp.getYC(), tmp.getYC())));
 			if ((tmp.getXC() < 0) || (tmp.getXC() > 7) || (tmp.getYC() < 0) || (tmp.getYC() > 7)) {
 
 			}
 			else if (piecePresent(((tmp.getXC() * 75) + 20), (((tmp.getYC() * 75) + 20)))) {
-				if (piece.contains("White")) {
 					if (checkWhiteOponent(((tmp.getXC() * 75) + 20), ((tmp.getYC() * 75) + 20))) {
 						attacking.push(tmpmove);
 					}
-				}
-				else {
-					if(checkBlackOponent(tmp.getXC(),tmp.getYC())){
-						attacking.push(tmpmove);
-					}
-				}
+
+
 			} else{
 				attacking.push(tmpmove);
 			}
@@ -955,7 +1110,7 @@ public class  ChessProject extends JFrame implements MouseListener, MouseMotionL
 		return attacking;
 	}
 
-	private Stack getWhitePawnSquares(int x, int y, String piece) {
+	public Stack getWhitePawnSquares(int x, int y, String piece) {
 		Stack moves = new Stack();
 		Square startingSquare = new Square(x, y, piece);
 		Move validM;
@@ -1012,8 +1167,408 @@ public class  ChessProject extends JFrame implements MouseListener, MouseMotionL
 
 		return moves;
 	}
+	public Stack getBlackKnightMoves(int x, int y, String piece) {
+		Square startingSquare = new Square(x, y, piece);
+		Stack moves = new Stack();
+		Stack attacking = new Stack();
+		Square s = new Square(x + 1, y + 2, piece);
+		moves.push(s);
+		Square s1 = new Square(x + 1, y - 2, piece);
+		moves.push(s1);
+		Square s2 = new Square(x - 1, y + 2, piece);
+		moves.push(s2);
+		Square s3 = new Square(x - 1, y - 2, piece);
+		moves.push(s3);
+		Square s4 = new Square(x + 2, y + 1, piece);
+		moves.push(s4);
+		Square s5 = new Square(x + 2, y - 1, piece);
+		moves.push(s5);
+		Square s6 = new Square(x - 2, y + 1, piece);
+		moves.push(s6);
+		Square s7 = new Square(x - 2, y - 1, piece);
+		moves.push(s7);
 
-	private Stack getKingSquares(int x, int y, String piece) {
+		for (int i = 0; i < 8; i++) {
+			Square tmp = (Square) moves.pop();
+			Move tmpmove = new Move(startingSquare, tmp, getBlackPieceScore(tmp.getYC(), tmp.getYC(), getPieceName(tmp.getYC(), tmp.getYC())));
+			if ((tmp.getXC() < 0) || (tmp.getXC() > 7) || (tmp.getYC() < 0) || (tmp.getYC() > 7)) {
+
+			}
+			else if (piecePresent(((tmp.getXC() * 75) + 20), (((tmp.getYC() * 75) + 20)))) {
+					if (checkBlackOponent(((tmp.getXC() * 75) + 20), ((tmp.getYC() * 75) + 20))) {
+						attacking.push(tmpmove);
+					}
+
+			} else{
+				attacking.push(tmpmove);
+			}
+
+		}
+
+		return attacking;
+	}
+
+	public Stack getBlackPawnSquares(int x, int y, String piece) {
+		Stack moves = new Stack();
+		Square startingSquare = new Square(x, y, piece);
+		Move validM;
+		int tmpx1 = x + 1;
+		int tmpx2 = x - 1;
+		int tmpy1 = y + 1;
+		int tmpy2 = y + 2;
+		if (y == 6) {
+			if (!piecePresent((x * 75) + 20, (tmpy1 * 75) + 20)) {
+				Square tmp = new Square(x, tmpy1, getPieceName(x, tmpy1));
+				validM = new Move(startingSquare, tmp, getBlackPieceScore(x, tmpy1, getPieceName(x,tmpy1)));
+				moves.push(validM);
+			}
+			if (!piecePresent((x * 75) + 20, (tmpy1 * 75) + 20) && !piecePresent((x * 75) + 20, (tmpy2 * 75) + 20)) {
+				Square tmp = new Square(x, tmpy2, getPieceName(x, tmpy2));
+				validM = new Move(startingSquare, tmp, getBlackPieceScore(x, tmpy2, getPieceName(x,tmpy2)));
+				moves.push(validM);
+			}
+			if (piecePresent((tmpx1 * 75) + 20, (tmpy1 * 75) + 20) && tmpx1>=0 && tmpx1<=7 && tmpy1>=0 && tmpy1<=7) {
+				if (checkBlackOponent((tmpx1 * 75) + 20, (tmpy1 * 75) + 20)) {
+					Square tmp = new Square(tmpx1, tmpy1, getPieceName(tmpx1, tmpy1));
+					validM = new Move(startingSquare, tmp, getBlackPieceScore(tmpx1, tmpy1, getPieceName(tmpx1,tmpy1)));
+					moves.push(validM);
+				}
+			}
+			if (piecePresent((tmpx2 * 75) + 20, (tmpy1 * 75) + 20) && tmpx2>=0 && tmpx2<=7 && tmpy1>=0 && tmpy1<=7) {
+				if (checkBlackOponent((tmpx2 * 75) + 20, (tmpy1 * 75) + 20)) {
+					Square tmp = new Square(tmpx2, tmpy1, getPieceName(tmpx2, tmpy1));
+					validM = new Move(startingSquare, tmp, getBlackPieceScore(tmpx2, tmpy1, getPieceName(tmpx2,tmpy1)));
+					moves.push(validM);
+				}
+			}
+		} else {
+			if (!piecePresent((x * 75) + 20, (tmpy1 * 75) + 20) && tmpy1>=0 && tmpy1<=7) {
+				Square tmp = new Square(x, tmpy1, getPieceName(x, tmpy1));
+				validM = new Move(startingSquare, tmp, getBlackPieceScore(x, tmpy1, getPieceName(x,tmpy1)));
+				moves.push(validM);
+			}
+			if (piecePresent((tmpx1 * 75) + 20, (tmpy1 * 75) + 20) && tmpx1>=0 && tmpx1<=7 && tmpy1>=0 && tmpy1<=7) {
+				if (checkBlackOponent((tmpx1 * 75) + 20, (tmpy1 * 75) + 20)) {
+					Square tmp = new Square(tmpx1, tmpy1, getPieceName(tmpx1, tmpy1));
+					validM = new Move(startingSquare, tmp, getBlackPieceScore(tmpx1, tmpy1, getPieceName(tmpx1,tmpy1)));
+					moves.push(validM);
+				}
+			}
+			if (piecePresent((tmpx2 * 75) + 20, (tmpy1 * 75) + 20) && tmpx2>=0 && tmpx2<=7 && tmpy1>=0 && tmpy1<=7) {
+				if (checkBlackOponent((tmpx2 * 75) + 20, (tmpy1 * 75) + 20)) {
+					Square tmp = new Square(tmpx2, tmpy1, getPieceName(tmpx2, tmpy1));
+					validM = new Move(startingSquare, tmp, getBlackPieceScore(tmpx2, tmpy1, getPieceName(tmpx2,tmpy1)));
+					moves.push(validM);
+				}
+			}
+		}
+
+		return moves;
+	}
+	public Stack getBlackKingSquares(int x, int y, String piece) {
+		Stack moves = new Stack();
+		Square startingSquare = new Square(x, y, piece);
+		Move validM, validM2, validM3, validM4;
+		int tmpx1 = x + 1;
+		int tmpx2 = x - 1;
+		int tmpy1 = y + 1;
+		int tmpy2 = y - 1;
+
+		if (!((tmpx1 > 7))) {
+			Square tmp = new Square(tmpx1, y, piece);
+			Square tmp1 = new Square(tmpx1, tmpy1, piece);
+			Square tmp2 = new Square(tmpx1, tmpy2, piece);
+			if (checkSurroundingSquares(tmp)) {
+				validM = new Move(startingSquare, tmp, getBlackPieceScore(tmpx1, y, getPieceName(tmpx1, y)));	//Added getPieceScore Here | Used to send weighting of piece.
+				if (!piecePresent(((tmp.getXC() * 75) + 20), (((tmp.getYC() * 75) + 20)))) {
+					moves.push(validM);
+				} else {
+					if (checkBlackOponent(((tmp.getXC() * 75) + 20), (((tmp.getYC() * 75) + 20)))) {
+						moves.push(validM);
+					}
+				}
+			}
+			if (!(tmpy1 > 7)) {
+				if (checkSurroundingSquares(tmp1)) {
+					validM2 = new Move(startingSquare, tmp1, getBlackPieceScore(tmpx1, tmpy1, getPieceName(tmpx1, tmpy1)));		//Added getPieceScore Here | Used to send weighting of piece.
+					if (!piecePresent(((tmp1.getXC() * 75) + 20), (((tmp1.getYC() * 75) + 20)))) {
+						moves.push(validM2);
+					} else {
+						if (checkBlackOponent(((tmp1.getXC() * 75) + 20), (((tmp1.getYC() * 75) + 20)))) {
+							moves.push(validM2);
+						}
+					}
+				}
+			}
+			if (!(tmpy2 < 0)) {
+				if (checkSurroundingSquares(tmp2)) {
+					validM3 = new Move(startingSquare, tmp2, getBlackPieceScore(tmpx1, tmpy2, getPieceName(tmpx1, tmpy2)));		//Added getPieceScore Here | Used to send weighting of piece.
+					if (!piecePresent(((tmp2.getXC() * 75) + 20), (((tmp2.getYC() * 75) + 20)))) {
+						moves.push(validM3);
+					} else {
+						System.out.println("The values that we are going to be looking at are : " + ((tmp2.getXC() * 75) + 20) + " and the y value is : " + ((tmp2.getYC() * 75) + 20));
+						if (checkBlackOponent(((tmp2.getXC() * 75) + 20), (((tmp2.getYC() * 75) + 20)))) {
+							moves.push(validM3);
+						}
+					}
+				}
+			}
+		}
+		if (!((tmpx2 < 0))) {
+			Square tmp3 = new Square(tmpx2, y, piece);
+			Square tmp4 = new Square(tmpx2, tmpy1, piece);
+			Square tmp5 = new Square(tmpx2, tmpy2, piece);
+			if (checkSurroundingSquares(tmp3)) {
+				validM = new Move(startingSquare, tmp3, getBlackPieceScore(tmpx2, y, getPieceName(tmpx2, y)));		//Added getPieceScore Here | Used to send weighting of piece.
+				if (!piecePresent(((tmp3.getXC() * 75) + 20), (((tmp3.getYC() * 75) + 20)))) {
+					moves.push(validM);
+				} else {
+					if (checkBlackOponent(((tmp3.getXC() * 75) + 20), (((tmp3.getYC() * 75) + 20)))) {
+						moves.push(validM);
+					}
+				}
+			}
+			if (!(tmpy1 > 7)) {
+				if (checkSurroundingSquares(tmp4)) {
+					validM2 = new Move(startingSquare, tmp4, getBlackPieceScore(tmpx2, tmpy1, getPieceName(tmpx2, tmpy1)));		//Added getPieceScore Here | Used to send weighting of piece.
+					if (!piecePresent(((tmp4.getXC() * 75) + 20), (((tmp4.getYC() * 75) + 20)))) {
+						moves.push(validM2);
+					} else {
+						if (checkBlackOponent(((tmp4.getXC() * 75) + 20), (((tmp4.getYC() * 75) + 20)))) {
+							moves.push(validM2);
+						}
+					}
+				}
+			}
+			if (!(tmpy2 < 0)) {
+				if (checkSurroundingSquares(tmp5)) {
+					validM3 = new Move(startingSquare, tmp5, getBlackPieceScore(tmpx2, tmpy2, getPieceName(tmpx2, tmpy2)));		//Added getPieceScore Here | Used to send weighting of piece.
+					if (!piecePresent(((tmp5.getXC() * 75) + 20), (((tmp5.getYC() * 75) + 20)))) {
+						moves.push(validM3);
+					} else {
+						if (checkBlackOponent(((tmp5.getXC() * 75) + 20), (((tmp5.getYC() * 75) + 20)))) {
+							moves.push(validM3);
+						}
+					}
+				}
+			}
+		}
+		Square tmp7 = new Square(x, tmpy1, piece);
+		Square tmp8 = new Square(x, tmpy2, piece);
+		if (!(tmpy1 > 7)) {
+			if (checkSurroundingSquares(tmp7)) {
+				validM2 = new Move(startingSquare, tmp7, getBlackPieceScore(x, tmpy1, getPieceName(x, tmpy1)));		//Added getPieceScore Here | Used to send weighting of piece.
+				if (!piecePresent(((tmp7.getXC() * 75) + 20), (((tmp7.getYC() * 75) + 20)))) {
+					moves.push(validM2);
+				} else {
+					if (checkBlackOponent(((tmp7.getXC() * 75) + 20), (((tmp7.getYC() * 75) + 20)))) {
+						moves.push(validM2);
+					}
+				}
+			}
+		}
+		if (!(tmpy2 < 0)) {
+			if (checkSurroundingSquares(tmp8)) {
+				validM3 = new Move(startingSquare, tmp8, getBlackPieceScore(x, tmpy2, getPieceName(x, tmpy2)));		//Added getPieceScore Here | Used to send weighting of piece.
+				if (!piecePresent(((tmp8.getXC() * 75) + 20), (((tmp8.getYC() * 75) + 20)))) {
+					moves.push(validM3);
+				} else {
+					if (checkBlackOponent(((tmp8.getXC() * 75) + 20), (((tmp8.getYC() * 75) + 20)))) {
+						moves.push(validM3);
+					}
+				}
+			}
+		}
+		return moves;
+	} // end of the method getKingSquares()
+
+	/*
+	 * Method to return all the possible moves that a Queen can make
+	 */
+	public Stack getBlackQueenMoves(int x, int y, String piece) {
+		Stack completeMoves = new Stack();
+		Stack tmpMoves = new Stack();
+		Move tmp;
+		/*
+		 * The Queen is a pretty easy piece to figure out if you have completed the
+		 * Bishop and the Rook movements. Either the Queen is going to move like a
+		 * Bishop or its going to move like a Rook, so all we have to do is make a call
+		 * to both of these methods.
+		 */
+		tmpMoves = getBlackRookMoves(x, y, piece);
+		while (!tmpMoves.empty()) {
+			tmp = (Move) tmpMoves.pop();
+			completeMoves.push(tmp);
+		}
+		tmpMoves = getBlackBishopMoves(x, y, piece);
+		while (!tmpMoves.empty()) {
+			tmp = (Move) tmpMoves.pop();
+			completeMoves.push(tmp);
+		}
+		return completeMoves;
+	}
+
+	public Stack getBlackRookMoves(int x, int y, String piece) {
+		Square startingSquare = new Square(x, y, piece);
+		Stack moves = new Stack();
+		Move validM, validM2, validM3, validM4;
+
+		for (int i = 1; i < 8; i++) {
+			int tmpx = x + i;
+			int tmpy = y;
+			if (!(tmpx > 7 || tmpx < 0)) {
+				Square tmp = new Square(tmpx, tmpy, piece);
+				validM = new Move(startingSquare, tmp, getBlackPieceScore(tmpx, tmpy, getPieceName(tmpx, tmpy)));	//Added getPieceScore Here | Used to send weighting of piece.
+				if (!piecePresent(((tmp.getXC() * 75) + 20), (((tmp.getYC() * 75) + 20)))) {
+					moves.push(validM);
+				} else {
+					if (checkBlackOponent(((tmp.getXC() * 75) + 20), ((tmp.getYC() * 75) + 20))) {
+						moves.push(validM);
+						break;
+					} else {
+						break;
+					}
+				}
+			}
+		} // end of the loop with x increasing and Y doing nothing...
+		for (int j = 1; j < 8; j++) {
+			int tmpx1 = x - j;
+			int tmpy1 = y;
+			if (!(tmpx1 > 7 || tmpx1 < 0)) {
+				Square tmp2 = new Square(tmpx1, tmpy1, piece);
+				validM2 = new Move(startingSquare, tmp2, getBlackPieceScore(tmpx1, tmpy1, getPieceName(tmpx1, tmpy1)));		//Added getPieceScore Here | Used to send weighting of piece.
+				if (!piecePresent(((tmp2.getXC() * 75) + 20), (((tmp2.getYC() * 75) + 20)))) {
+					moves.push(validM2);
+				} else {
+					if (checkBlackOponent(((tmp2.getXC() * 75) + 20), ((tmp2.getYC() * 75) + 20))) {
+						moves.push(validM2);
+						break;
+					} else {
+						break;
+					}
+				}
+			}
+		} // end of the loop with x increasing and Y doing nothing...
+		for (int k = 1; k < 8; k++) {
+			int tmpx3 = x;
+			int tmpy3 = y + k;
+			if (!(tmpy3 > 7 || tmpy3 < 0)) {
+				Square tmp3 = new Square(tmpx3, tmpy3, piece);
+				validM3 = new Move(startingSquare, tmp3, getBlackPieceScore(tmpx3, tmpy3, getPieceName(tmpx3, tmpy3)));		//Added getPieceScore Here | Used to send weighting of piece.
+				if (!piecePresent(((tmp3.getXC() * 75) + 20), (((tmp3.getYC() * 75) + 20)))) {
+					moves.push(validM3);
+				} else {
+					if (checkBlackOponent(((tmp3.getXC() * 75) + 20), ((tmp3.getYC() * 75) + 20))) {
+						moves.push(validM3);
+						break;
+					} else {
+						break;
+					}
+				}
+			}
+		} // end of the loop with x increasing and Y doing nothing...
+		for (int l = 1; l < 8; l++) {
+			int tmpx4 = x;
+			int tmpy4 = y - l;
+			if (!(tmpy4 > 7 || tmpy4 < 0)) {
+				Square tmp4 = new Square(tmpx4, tmpy4, piece);
+				validM4 = new Move(startingSquare, tmp4, getBlackPieceScore(tmpx4, tmpy4, getPieceName(tmpx4, tmpy4)));		//Added getPieceScore Here | Used to send weighting of piece.
+				if (!piecePresent(((tmp4.getXC() * 75) + 20), (((tmp4.getYC() * 75) + 20)))) {
+					moves.push(validM4);
+				} else {
+					if (checkBlackOponent(((tmp4.getXC() * 75) + 20), ((tmp4.getYC() * 75) + 20))) {
+						moves.push(validM4);
+						break;
+					} else {
+						break;
+					}
+				}
+			}
+		} // end of the loop with x increasing and Y doing nothing...
+		return moves;
+	}// end of get Rook Moves.
+
+	public Stack getBlackBishopMoves(int x, int y, String piece) {
+		Square startingSquare = new Square(x, y, piece);
+		Stack moves = new Stack();
+		Move validM, validM2, validM3, validM4;
+
+		for (int i = 1; i < 8; i++) {
+			int tmpx = x + i;
+			int tmpy = y + i;
+			if (!(tmpx > 7 || tmpx < 0 || tmpy > 7 || tmpy < 0)) {
+				Square tmp = new Square(tmpx, tmpy, piece);
+				validM = new Move(startingSquare, tmp, getBlackPieceScore(tmpx, tmpy, getPieceName(tmpx, tmpy)));
+				if (!piecePresent(((tmp.getXC() * 75) + 20), (((tmp.getYC() * 75) + 20)))) {
+					moves.push(validM);
+				} else {
+					if (checkBlackOponent(((tmp.getXC() * 75) + 20), ((tmp.getYC() * 75) + 20))) {
+						moves.push(validM);
+						break;
+					} else {
+						break;
+					}
+				}
+			}
+		} // end of the first for Loop
+		for (int k = 1; k < 8; k++) {
+			int tmpk = x + k;
+			int tmpy2 = y - k;
+			if (!(tmpk > 7 || tmpk < 0 || tmpy2 > 7 || tmpy2 < 0)) {
+				Square tmpK1 = new Square(tmpk, tmpy2, piece);
+				validM2 = new Move(startingSquare, tmpK1, getBlackPieceScore(tmpk, tmpy2, getPieceName(tmpk, tmpy2)));	//Added getPieceScore Here | Used to send weighting of piece.
+				if (!piecePresent(((tmpK1.getXC() * 75) + 20), (((tmpK1.getYC() * 75) + 20)))) {
+					moves.push(validM2);
+				} else {
+					if (checkBlackOponent(((tmpK1.getXC() * 75) + 20), ((tmpK1.getYC() * 75) + 20))) {
+						moves.push(validM2);
+						break;
+					} else {
+						break;
+					}
+				}
+			}
+		} // end of second loop.
+		for (int l = 1; l < 8; l++) {
+			int tmpL2 = x - l;
+			int tmpy3 = y + l;
+			if (!(tmpL2 > 7 || tmpL2 < 0 || tmpy3 > 7 || tmpy3 < 0)) {
+				Square tmpLMov2 = new Square(tmpL2, tmpy3, piece);
+				validM3 = new Move(startingSquare, tmpLMov2, getBlackPieceScore(tmpL2, tmpy3, getPieceName(tmpL2, tmpy3)));	//Added getPieceScore Here | Used to send weighting of piece.
+				if (!piecePresent(((tmpLMov2.getXC() * 75) + 20), (((tmpLMov2.getYC() * 75) + 20)))) {
+					moves.push(validM3);
+				} else {
+					if (checkBlackOponent(((tmpLMov2.getXC() * 75) + 20), ((tmpLMov2.getYC() * 75) + 20))) {
+						moves.push(validM3);
+						break;
+					} else {
+						break;
+					}
+				}
+			}
+		} // end of the third loop
+		for (int n = 1; n < 8; n++) {
+			int tmpN2 = x - n;
+			int tmpy4 = y - n;
+			if (!(tmpN2 > 7 || tmpN2 < 0 || tmpy4 > 7 || tmpy4 < 0)) {
+				Square tmpNmov2 = new Square(tmpN2, tmpy4, piece);
+				validM4 = new Move(startingSquare, tmpNmov2, getBlackPieceScore(tmpN2, tmpy4, getPieceName(tmpN2, tmpy4)));	//Added getPieceScore Here | Used to send weighting of piece.
+				if (!piecePresent(((tmpNmov2.getXC() * 75) + 20), (((tmpNmov2.getYC() * 75) + 20)))) {
+					moves.push(validM4);
+				} else {
+					if (checkBlackOponent(((tmpNmov2.getXC() * 75) + 20), ((tmpNmov2.getYC() * 75) + 20))) {
+						moves.push(validM4);
+						break;
+					} else {
+						break;
+					}
+				}
+			}
+		} // end of the last loop
+		return moves;
+	}
+
+	public Stack getKingSquares(int x, int y, String piece) {
 		Stack moves = new Stack();
 		Square startingSquare = new Square(x, y, piece);
 		Move validM, validM2, validM3, validM4;
@@ -1133,7 +1688,7 @@ public class  ChessProject extends JFrame implements MouseListener, MouseMotionL
 	/*
 	 * Method to return all the possible moves that a Queen can make
 	 */
-	private Stack getQueenMoves(int x, int y, String piece) {
+	public Stack getQueenMoves(int x, int y, String piece) {
 		Stack completeMoves = new Stack();
 		Stack tmpMoves = new Stack();
 		Move tmp;
@@ -1156,7 +1711,7 @@ public class  ChessProject extends JFrame implements MouseListener, MouseMotionL
 		return completeMoves;
 	}
 
-	private Stack getRookMoves(int x, int y, String piece) {
+	public Stack getRookMoves(int x, int y, String piece) {
 		Square startingSquare = new Square(x, y, piece);
 		Stack moves = new Stack();
 		Move validM, validM2, validM3, validM4;
@@ -1236,7 +1791,7 @@ public class  ChessProject extends JFrame implements MouseListener, MouseMotionL
 		return moves;
 	}// end of get Rook Moves.
 
-	private Stack getBishopMoves(int x, int y, String piece) {
+	public Stack getBishopMoves(int x, int y, String piece) {
 		Square startingSquare = new Square(x, y, piece);
 		Stack moves = new Stack();
 		Move validM, validM2, validM3, validM4;
@@ -1319,50 +1874,47 @@ public class  ChessProject extends JFrame implements MouseListener, MouseMotionL
 //
 //	}
 
-
-	private void colorSquares(Stack squares) {
-		Border greenBorder = BorderFactory.createLineBorder(Color.GREEN, 3);
-		while (!squares.empty()) {
-			Square s = (Square) squares.pop();
-			int location = s.getXC() + ((s.getYC()) * 8);
-			JPanel panel = (JPanel) chessBoard.getComponent(location);
-			panel.setBorder(greenBorder);
-		}
-	}
-	private void resetBorders(){
-		Border empty = BorderFactory.createEmptyBorder();
-		for(int i=0;i < 64;i++){
-			JPanel tmppanel = (JPanel)chessBoard.getComponent(i);
-			tmppanel.setBorder(empty);
-		}
-	}
-
-	/*
-      The method printStack takes in a Stack of Moves and prints out all possible moves.
-    */
-	private void printStack(Stack input){
-		Move m;
-		Square s, l;
-		while(!input.empty()){
-			m = (Move)input.pop();
-			s = (Square)m.getStart();
-			l = (Square)m.getLanding();
-			System.out.println("The possible move that was found is : ("+s.getXC()+" , "+s.getYC()+"), landing at ("+l.getXC()+" , "+l.getYC()+")");
-		}
-	}
-	private void getLandingSquares(Stack found){
+	public Move twoLevelsDeep(Stack possibilities){
+		Random rand;
+		rand = new Random();
+		Stack temporary = (Stack)possibilities.clone();
+		Square s=new Square(75,75,"BlackPawn");
+		Square s1=new Square(75,75,"BlackPawn");
+		Move selectedMove = new Move(s1,s,-1);
+		int moveID = rand.nextInt(possibilities.size());
 		Move tmp;
-		Square landing;
-		Stack squares = new Stack();
-		while(!found.empty()){
-			tmp = (Move)found.pop();
-			landing = (Square)tmp.getLanding();
-			squares.push(landing);
+		Move tmp1,tmp2 = new Move();
+		tmp2.moveScore=-999;
+		int counter= possibilities.size();
+		for(int i=0;i< counter;i++){
+			tmp=(Move)possibilities.pop();
+			Stack black=blackAttacks();
+			int counter1=black.size();
+			for(int j=0;j<counter1;j++){
+				tmp1=(Move)black.pop();
+				if(tmp1.getScore()>tmp2.getScore()){
+					tmp2=tmp1;
+				}
+			}
+
+			for (int p=0;p<counter;p++){
+				if(selectedMove.getScore()<(tmp.getScore()- tmp2.getScore())){
+					selectedMove=tmp;
+				}
+			}
 		}
-		colorSquares(squares);
+		if(selectedMove.getScore()<=0){
+			for(int i=1;i < (temporary.size()-(moveID));i++){
+				temporary.pop();
+			}
+			selectedMove = (Move)temporary.pop();
+		}
+		System.out.println(selectedMove.getScore()+"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+		return selectedMove;
 	}
 
-	private void makeAIMove(){
+
+	public void makeAIMove(){
   /*
     When the AI Agent decides on a move, a red border shows the square from where the move started and the
     landing square of the move.
@@ -1440,7 +1992,7 @@ So now we should have a copy of all the possible moves to make in our Stack call
 			}
 			System.out.println("=============================================================");
 			Border redBorder = BorderFactory.createLineBorder(Color.RED, 3);
-			Move selectedMove = agent.nextBestMove(testing);
+			Move selectedMove = twoLevelsDeep(testing);
 			Square startingPoint = (Square)selectedMove.getStart();
 			Square landingPoint = (Square)selectedMove.getLanding();
 			int startX1 = (startingPoint.getXC()*75)+20;
