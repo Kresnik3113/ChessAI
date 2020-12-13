@@ -11,7 +11,7 @@ import javax.swing.border.Border;
  
 public class  ChessProject extends JFrame implements MouseListener, MouseMotionListener {
     JLayeredPane layeredPane;
-    String pieceName;
+	String pieceName;
 	Boolean agentwins = false;
 	Boolean white2Move = false;
     JPanel chessBoard;
@@ -133,16 +133,35 @@ public class  ChessProject extends JFrame implements MouseListener, MouseMotionL
 	}
 
 	public String getPieceName(int x, int y) {
-		Square s=new Square(x,y);
-		pieceName=s.getName();
-		System.out.println(pieceName);
-		return pieceName;
+		String returnedPieceName="";
+		x=(x* 75) + 20;
+		y=(y* 75) + 20;
+		Component c2 = chessBoard.findComponentAt(x, y);
+		if(c2 instanceof JLabel){
+			JLabel awaitingPiece = (JLabel)c2;
+			 returnedPieceName = awaitingPiece.getIcon().toString();
+			return returnedPieceName;
+		}
+		else {
+			return returnedPieceName;
+		}
+
 	}
 	private Boolean checkSurroundingSquares(Square s){
 		Boolean possible = false;
 		int x = s.getXC()*75;
 		int y = s.getYC()*75;
 		if(!((getPieceName((x+75), y).contains("BlackKing"))||(getPieceName((x-75), y).contains("BlackKing"))||(getPieceName(x,(y+75)).contains("BlackKing"))||(getPieceName((x), (y-75)).contains("BlackKing"))||(getPieceName((x+75),(y+75)).contains("BlackKing"))||(getPieceName((x-75),(y+75)).contains("BlackKing"))||(getPieceName((x+75),(y-75)).contains("BlackKing"))||(getPieceName((x-75), (y-75)).contains("BlackKing")))){
+			possible = true;
+
+		}
+		return possible;
+	}
+	private Boolean checkSurroundingSquaresWhite(Square s){
+		Boolean possible = false;
+		int x = s.getXC()*75;
+		int y = s.getYC()*75;
+		if(((getPieceName((x+75), y).contains("WhiteKing"))||(getPieceName((x-75), y).contains("WhiteKing"))||(getPieceName(x,(y+75)).contains("WhiteKing"))||(getPieceName((x), (y-75)).contains("WhiteKing"))||(getPieceName((x+75),(y+75)).contains("WhiteKing"))||(getPieceName((x-75),(y+75)).contains("WhiteKing"))||(getPieceName((x+75),(y-75)).contains("WhiteKing"))||(getPieceName((x-75), (y-75)).contains("WhiteKing")))){
 			possible = true;
 		}
 		return possible;
@@ -195,13 +214,9 @@ public class  ChessProject extends JFrame implements MouseListener, MouseMotionL
 				pieceScore = 0;
 				System.out.println("No Piece Found | No Points");
 			}
-			// else {
-			// 	pieceScore = 0;
-			// }
+
 		}
-		else {
-			return 0;
-		}
+
 
 		return pieceScore;
 	}
@@ -277,7 +292,7 @@ public class  ChessProject extends JFrame implements MouseListener, MouseMotionL
 		Boolean success =false;
         Component c =  chessBoard.findComponentAt(e.getX(), e.getY());
 		String tmp = chessPiece.getIcon().toString();
-		String pieceName = tmp.substring(0, (tmp.length()-4));
+		pieceName = tmp.substring(0, (tmp.length()-4));
 		Boolean validMove = false;
 		landingX=(e.getX()/75);
 		landingY=(e.getY()/75);
@@ -314,6 +329,7 @@ public class  ChessProject extends JFrame implements MouseListener, MouseMotionL
 						else if(piecePresent(e.getX(), e.getY())&&(((startX-landingX)==1)||(startX-landingX)==-1)){
 							if(checkBlackOponent(e.getX(),e.getY())){
 								validMove=true;
+								checkMate(e.getX(),e.getY());
 								if(startY==1){
 									progression=true;
 								}
@@ -340,6 +356,7 @@ public class  ChessProject extends JFrame implements MouseListener, MouseMotionL
 					if(piecePresent(e.getX(),e.getY())){
 						if(checkBlackOponent(e.getX(),e.getY())){
 							validMove=true;
+							checkMate(e.getX(),e.getY());
 							if(landingY==0){
 								progression=true;
 							}
@@ -745,9 +762,14 @@ public class  ChessProject extends JFrame implements MouseListener, MouseMotionL
 			Boolean inTheWay=false;
 			int distanceX=Math.abs(startX-landingX);
 			int distanceY=Math.abs(startY-landingY);
+			int x = e.getX();
+			int y = e.getY();
+			Square s=new Square(x,y);
 			if(((landingX<0)||((landingX>7))||((landingY<0))||(landingY>7))){
 				validMove=false;
 			}
+
+
 			else {
 				if(((distanceX <= 1) || (distanceX <= -1)) && ((distanceY <= -1) || (distanceY <= 1))){
 					if ((landingX == startX)&&(landingY == startY)) {
@@ -758,8 +780,14 @@ public class  ChessProject extends JFrame implements MouseListener, MouseMotionL
 							validMove = true;
 						}
 						else{
-							if (pieceName.contains("White")) {
+							System.out.println(landingX+"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"+ y);
+							if(checkSurroundingSquaresWhite(s)){
+								System.out.println("One away from king!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+								validMove=false;
+							}
+							else if (pieceName.contains("White")) {
 								if (checkWhiteOponent(e.getX(), e.getY())) {
+
 									validMove = true;
 								}
 							}
@@ -775,6 +803,7 @@ public class  ChessProject extends JFrame implements MouseListener, MouseMotionL
 					}
 				}
 			}
+
 		}
 		if(!validMove){
 			int location=0;
@@ -902,28 +931,27 @@ public class  ChessProject extends JFrame implements MouseListener, MouseMotionL
 
 		for (int i = 0; i < 8; i++) {
 			Square tmp = (Square) moves.pop();
-			//Move tmpmove = new Move(startingSquare, tmp, getPieceScore(tmp.getYC(), tmp.getYC(), getPieceName(tmp.getYC(), tmp.getYC())));	//Added getPieceScore Here | Used to send weighting of piece.
+			Move tmpmove = new Move(startingSquare, tmp, getPieceScore(tmp.getYC(), tmp.getYC(), getPieceName(tmp.getYC(), tmp.getYC())));	//Added getPieceScore Here | Used to send weighting of piece.
 			if ((tmp.getXC() < 0) || (tmp.getXC() > 7) || (tmp.getYC() < 0) || (tmp.getYC() > 7)) {
 
 			}
 			else if (piecePresent(((tmp.getXC() * 75) + 20), (((tmp.getYC() * 75) + 20)))) {
 				if (piece.contains("White")) {
 					if (checkWhiteOponent(((tmp.getXC() * 75) + 20), ((tmp.getYC() * 75) + 20))) {
-						attacking.push(tmp);
+						attacking.push(tmpmove);
 					}
 				}
 				else {
 					if(checkBlackOponent(tmp.getXC(),tmp.getYC())){
-						attacking.push(tmp);
+						attacking.push(tmpmove);
 					}
 				}
 			} else{
-				attacking.push(tmp);
+				attacking.push(tmpmove);
 			}
 
 		}
-		Stack tmp=attacking;
-		colorSquares(tmp);
+
 		return attacking;
 	}
 
@@ -1412,7 +1440,7 @@ So now we should have a copy of all the possible moves to make in our Stack call
 			}
 			System.out.println("=============================================================");
 			Border redBorder = BorderFactory.createLineBorder(Color.RED, 3);
-			Move selectedMove = agent.randomMove(testing);
+			Move selectedMove = agent.nextBestMove(testing);
 			Square startingPoint = (Square)selectedMove.getStart();
 			Square landingPoint = (Square)selectedMove.getLanding();
 			int startX1 = (startingPoint.getXC()*75)+20;
@@ -1464,10 +1492,53 @@ So now we should have a copy of all the possible moves to make in our Stack call
 			white2Move = false;
 		}
 	}
- 	
+
 	/*
 		Main method that gets the ball moving.
 	*/
+	public void checkMate(int landingX1,int landingY1){
+		Component l = chessBoard.findComponentAt(landingX1, landingY1);
+//		Component l1 = chessBoard.findComponentAt(landingX1 -75, landingY1-75);
+//		Component l2 = chessBoard.findComponentAt(landingX1, landingY1-75);
+//		Component l3 = chessBoard.findComponentAt(landingX1+75, landingY1-75);
+//		Component l4 = chessBoard.findComponentAt(landingX1-75, landingY1);
+//		Component l5 = chessBoard.findComponentAt(landingX1+75, landingY1);
+//		Component l6 = chessBoard.findComponentAt(landingX1-75, landingY1+75);
+//		Component l7 = chessBoard.findComponentAt(landingX1, landingY1+75);
+//		Component l8 = chessBoard.findComponentAt(landingX1+75, landingY1+75);
+//		ArrayList<Component> c=new ArrayList<>();
+//		c.add(l1);
+//		c.add(l2);
+//		c.add(l3);
+//		c.add(l4);
+//		c.add(l5);
+//		c.add(l6);
+//		c.add(l7);
+//		c.add(l8);
+//		for(int i=0;i<c.size();i++){
+//			if(c.get(i) instanceof JLabel){
+//				Container parentlanding = c.get(i).getParent();
+//				JLabel awaitingName = (JLabel)c.get(i);
+//				String agentCaptured = awaitingName.getIcon().toString();
+//				if(agentCaptured.contains("King")){
+//					JOptionPane.showMessageDialog(null, "You have won!");
+//					System.exit(0);
+//				}
+//			}
+//		}
+		if(l instanceof JLabel){
+			Container parentlanding = l.getParent();
+			JLabel awaitingName = (JLabel)l;
+			String agentCaptured = awaitingName.getIcon().toString();
+			if(agentCaptured.contains("King")){
+				JOptionPane.showMessageDialog(null, "You have won!");
+				System.exit(0);
+			}
+
+
+
+		}
+	}
 
 	public static void initalCreation() {
 		ChessProject frame = new ChessProject();

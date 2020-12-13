@@ -25,7 +25,27 @@ public class AIAgent{
     }
 
     public Move nextBestMove(Stack possibilities){
-        Move selectedMove = new Move();
+        Square s=new Square(75,75,"BlackPawn");
+        Square s1=new Square(75,75,"BlackPawn");
+        Move selectedMove = new Move(s1,s,-1);
+        int moveID = rand.nextInt(possibilities.size());
+        Move tmp = new Move();
+        int counter= possibilities.size();
+        for(int i=0;i< possibilities.size();i++){
+            tmp=(Move)possibilities.pop();
+            for (int p=0;p<counter;p++){
+                if(selectedMove.getScore()<tmp.getScore()){
+                    selectedMove=tmp;
+                }
+            }
+        }
+        if(selectedMove.getScore()==0){
+          for(int i=1;i < (possibilities.size()-(moveID));i++){
+                possibilities.pop();
+           }
+            selectedMove = (Move)possibilities.pop();
+       }
+        System.out.println(selectedMove.getScore()+"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         return selectedMove;
     }
 
