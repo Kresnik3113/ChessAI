@@ -1356,18 +1356,19 @@ public class  ChessProject extends JFrame implements MouseListener, MouseMotionL
         We need to identify all the possible moves that can be made by the AI Opponent
     */
 			if(tmpString.contains("Knight")){
-				//    tmpMoves = getKnightMoves(s.getXC(), s.getYC(), s.getName());
+				    tmpMoves = getKnightMoves(s.getXC(), s.getYC(), s.getName());
 			}
 			else if(tmpString.contains("Bishop")){
-				//    tmpMoves = getBishopMoves(s.getXC(), s.getYC(), s.getName());
+				    tmpMoves = getBishopMoves(s.getXC(), s.getYC(), s.getName());
 			}
 			else if(tmpString.contains("Pawn")){
+					tmpMoves = getWhitePawnSquares(s.getXC(), s.getYC(), s.getName());
 			}
 			else if(tmpString.contains("Rook")){
-				//  tmpMoves = getRookMoves(s.getXC(), s.getYC(), s.getName());
+				  tmpMoves = getRookMoves(s.getXC(), s.getYC(), s.getName());
 			}
 			else if(tmpString.contains("Queen")){
-				//  tmpMoves = getQueenMoves(s.getXC(), s.getYC(), s.getName());
+				  tmpMoves = getQueenMoves(s.getXC(), s.getYC(), s.getName());
 			}
 			else if(tmpString.contains("King")){
 				tmpMoves = getKingSquares(s.getXC(), s.getYC(), s.getName());
